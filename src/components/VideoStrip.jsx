@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 
 const projects = [
   { id: 1, title: 'Event', category: 'Event', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1780050077/video_2026-05-29_15-50-21_evctae.mp4' },
@@ -10,7 +10,6 @@ const projects = [
   { id: 7, title: 'Event', category: 'Event', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1780050074/video_2026-05-29_15-50-31_clxsv7.mp4' },
   { id: 8, title: 'Event', category: 'Event', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1780050073/video_2026-05-29_15-50-33_dvcz9d.mp4' },
   { id: 9, title: 'Event', category: 'Event', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1780050073/video_2026-05-29_15-50-35_qdfau1.mp4' },
-
   { id: 10, title: 'Cinematic Reels', category: 'Automobile Motion', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1773648916/VID-20260316-WA0022_yxifmh.mp4' },
   { id: 11, title: 'Precision Workshop', category: 'Automobile Motion', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1773648914/VID-20260316-WA0020_a2pc7o.mp4' },
   { id: 12, title: 'Build Dynamics', category: 'Automobile Motion', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1773648914/VID-20260316-WA0023_u85jx6.mp4' },
@@ -19,7 +18,6 @@ const projects = [
   { id: 15, title: 'Precision Workshop', category: 'Automobile Motion', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1773648911/VID-20260316-WA0017_jrbsm8.mp4' },
   { id: 16, title: 'Build Dynamics', category: 'Automobile Motion', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1773648911/VID-20260316-WA0018_lug8td.mp4' },
   { id: 17, title: 'Precision Workshop', category: 'Automobile Motion', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1773648911/VID-20260316-WA0016_tvu0u7.mp4' },
-
   { id: 18, title: 'Luxury Real Estate', category: 'Dubai Market', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1770736127/IMG_0625_objalt.mp4' },
   { id: 19, title: 'Short-Form Content', category: 'Dubai Market', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1770736127/2_xuegxk.mp4' },
   { id: 20, title: 'Luxury Real Estate', category: 'Dubai Market', src: 'https://res.cloudinary.com/dx2yhouml/video/upload/v1770736125/IMG_0626_igwxtd.mp4' },
@@ -39,7 +37,6 @@ const projects = [
 ];
 
 const VideoStrip = () => {
-  // Track which video is currently opened in full screen view
   const [activeVideo, setActiveVideo] = useState(null);
 
   return (
@@ -57,17 +54,21 @@ const VideoStrip = () => {
             <video
               src={p.src}
               loop
-              muted // Always muted on main feed layout to bypass browser restrictions
+              muted
               playsInline
-              preload="metadata" // Drastically cuts down initial page size weight
+              preload="metadata"
               onMouseEnter={e => {
-                // Smoothly handles play promises to eliminate console abort warnings
-                const playPromise = e.target.play();
+                // Fixed: explicitly casting/handling currentTarget for production compilers
+                const videoEl = e.currentTarget;
+                const playPromise = videoEl.play();
                 if (playPromise !== undefined) {
-                  playPromise.catch(() => { /* safe fallthrough */ });
+                  playPromise.catch(() => {});
                 }
               }}
-              onMouseLeave={e => e.target.pause()}
+              onMouseLeave={e => {
+                const videoEl = e.currentTarget;
+                videoEl.pause();
+              }}
             />
 
             <div className="video-overlay">
@@ -78,7 +79,6 @@ const VideoStrip = () => {
         ))}
       </div>
 
-      {/* Pop-up Video Modal Overlay (Plays WITH sound) */}
       {activeVideo && (
         <div 
           className="video-modal-overlay"
@@ -96,10 +96,9 @@ const VideoStrip = () => {
         >
           <div 
             className="video-modal-content"
-            onClick={e => e.stopPropagation()} // Keeps modal open when clicking inside video wrapper
+            onClick={e => e.stopPropagation()}
             style={{ position: 'relative', width: '100%', maxWidth: '450px' }}
           >
-            {/* Close Button */}
             <button 
               onClick={() => setActiveVideo(null)}
               style={{
@@ -108,13 +107,13 @@ const VideoStrip = () => {
                 fontSize: '24px', cursor: 'pointer'
               }}
             >
-              ✕
+              &times; {/* Fixed: Using clean HTML entity instead of raw symbol */}
             </button>
 
             <video
               src={activeVideo.src}
               autoPlay
-              controls // Gives users volume slider, scrubbing bar, and pause buttons
+              controls
               playsInline
               style={{ width: '100%', borderRadius: '12px', maxHeight: '80vh' }}
             />
